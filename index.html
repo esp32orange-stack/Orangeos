@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ORANGE OS — ESP32 Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --o:   #F97316;
+      --ol:  #FB923C;
+      --op:  #FED7AA;
+      --od:  rgba(249,115,22,0.12);
+      --og:  rgba(249,115,22,0.28);
+      --ob:  rgba(249,115,22,0.28);
+      --t:   #2DD4BF;
+      --td:  rgba(45,212,191,0.10);
+      --a:   #D97706;
+      --ad:  rgba(217,119,6,0.13);
+      --bg:  #0C0C0A;
+      --bg2: #131310;
+      --bg3: #1A1A16;
+      --s:   #212119;
+      --s2:  #2A2A25;
+      --tx:  #F5EFE0;
+      --t2:  #928C7E;
+      --t3:  #524E46;
+      --b1:  rgba(255,255,255,0.06);
+      --b2:  rgba(255,255,255,0.11);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--tx);font-family:'Nunito',sans-serif;overflow-x:hidden;line-height:1.6}
+    body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(249,115,22,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(249,115,22,0.04) 1px,transparent 1px);background-size:48px 48px}
+
+    /* NAV */
+    nav{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:999;width:calc(100% - 32px);max-width:1040px;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 10px 0 16px;background:rgba(12,12,10,0.92);backdrop-filter:blur(20px);border:1px solid var(--b2);border-radius:999px}
+    .logo{display:flex;align-items:center;gap:9px;text-decoration:none;color:var(--tx);font-weight:900;font-size:16px;letter-spacing:-0.3px;flex-shrink:0}
+    .logo-mark{width:30px;height:30px;border-radius:9px;background:var(--o);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#000;box-shadow:0 0 16px var(--og)}
+    .nav-links{display:flex;gap:4px;list-style:none;align-items:center}
+    .nav-links a{color:var(--t2);text-decoration:none;font-size:13px;font-weight:700;padding:7px 13px;border-radius:999px;transition:all 0.18s;white-space:nowrap}
+    .nav-links a:hover{color:var(--tx);background:var(--s)}
+    .n-shop{color:var(--t)!important;background:var(--td)!important;border:1px solid rgba(45,212,191,0.22)}
+    .n-shop:hover{background:rgba(45,212,191,0.2)!important}
+    .n-tt{background:var(--o)!important;color:#000!important;font-weight:800!important}
+    .n-tt:hover{background:var(--ol)!important;box-shadow:0 0 22px var(--og)}
+
+    /* HERO */
+    .hero{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:130px 24px 80px}
+    .glow{position:absolute;pointer-events:none;border-radius:50%}
+    .g1{width:700px;height:700px;background:radial-gradient(circle,rgba(249,115,22,0.14) 0%,transparent 65%);top:40%;left:50%;transform:translate(-50%,-50%)}
+    .g2{width:300px;height:300px;background:radial-gradient(circle,rgba(45,212,191,0.07) 0%,transparent 70%);bottom:12%;right:6%}
+    .g3{width:240px;height:240px;background:radial-gradient(circle,rgba(217,119,6,0.09) 0%,transparent 70%);top:18%;left:5%}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;background:var(--od);border:1px solid var(--ob);border-radius:999px;padding:5px 16px;font-family:'Space Mono',monospace;font-size:10px;font-weight:700;color:var(--ol);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;animation:up .5s ease both}
+    .blink{width:7px;height:7px;border-radius:50%;background:var(--o);animation:blink 1.8s ease-in-out infinite}
+    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--o)}50%{opacity:.3;box-shadow:none}}
+    .hero h1{font-size:clamp(56px,10vw,106px);font-weight:900;letter-spacing:-4px;line-height:.9;margin-bottom:20px;animation:up .5s .08s ease both}
+    .hero h1 .ac{color:var(--o);text-shadow:0 0 80px rgba(249,115,22,.35)}
+    .hero-sub{font-size:17px;color:var(--t2);font-weight:600;max-width:500px;line-height:1.7;margin-bottom:12px;animation:up .5s .16s ease both}
+    .hero-sub2{font-family:'Space Mono',monospace;font-size:12px;color:var(--o);letter-spacing:1px;margin-bottom:44px;animation:up .5s .2s ease both}
+    .hero-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;animation:up .5s .24s ease both}
+    @keyframes up{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    .scroll-hint{position:absolute;bottom:32px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--t3);font-family:'Space Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;animation:up .5s .4s ease both}
+    .scroll-line{width:1px;height:36px;background:linear-gradient(to bottom,var(--o),transparent);animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 26px;border-radius:999px;font-family:'Nunito',sans-serif;font-weight:800;font-size:14px;cursor:pointer;text-decoration:none;border:none;transition:all .2s}
+    .btn-o{background:var(--o);color:#000}
+    .btn-o:hover{background:var(--ol);box-shadow:0 6px 28px var(--og);transform:translateY(-2px)}
+    .btn-g{background:transparent;color:var(--t2);border:1px solid var(--b2)}
+    .btn-g:hover{background:var(--s);color:var(--tx);transform:translateY(-2px)}
+    .btn-t{background:var(--td);color:var(--t);border:1px solid rgba(45,212,191,0.25)}
+    .btn-t:hover{background:rgba(45,212,191,0.2);transform:translateY(-2px)}
+
+    /* STATS */
+    .stats-wrap{position:relative;z-index:1;max-width:900px;margin:0 auto 88px;padding:0 24px}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border:1px solid var(--b2);border-radius:20px;overflow:hidden}
+    .stat{padding:26px 16px;text-align:center;border-right:1px solid var(--b1);transition:background .2s}
+    .stat:last-child{border-right:none}
+    .stat:hover{background:var(--bg3)}
+    .sn{display:block;font-size:28px;font-weight:900;color:var(--o);letter-spacing:-1px;margin-bottom:5px}
+    .sl{font-family:'Space Mono',monospace;font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:1.2px}
+
+    /* LAYOUT */
+    .section{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:80px 24px}
+    .sh{margin-bottom:48px}
+    .tag{display:block;font-family:'Space Mono',monospace;font-size:10px;color:var(--o);text-transform:uppercase;letter-spacing:2.5px;margin-bottom:14px}
+    h2{font-size:clamp(28px,4.5vw,44px);font-weight:900;letter-spacing:-1.5px;line-height:1.05;margin-bottom:14px}
+    .desc{color:var(--t2);font-size:16px;font-weight:600;line-height:1.7;max-width:500px}
+    .divider{position:relative;z-index:1;height:1px;background:linear-gradient(90deg,transparent,var(--ob),transparent);margin:0 24px}
+
+    /* ABOUT */
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .about-card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:32px;transition:all .25s;position:relative;overflow:hidden}
+    .about-card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--o),transparent);opacity:0;transition:opacity .25s}
+    .about-card:hover{border-color:var(--ob);background:var(--bg3);transform:translateY(-3px)}
+    .about-card:hover::after{opacity:1}
+    .about-card.teal::after{background:linear-gradient(90deg,transparent,var(--t),transparent)}
+    .about-card.teal:hover{border-color:rgba(45,212,191,.28)}
+    .about-icon{font-size:36px;margin-bottom:16px;display:block}
+    .about-card h3{font-size:20px;font-weight:900;letter-spacing:-.4px;margin-bottom:10px}
+    .about-card p{font-size:14px;color:var(--t2);line-height:1.7;font-weight:600}
+
+    /* CONTENT GRID */
+    .content-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+    .card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:28px;transition:all .25s;position:relative;overflow:hidden;text-decoration:none;color:var(--tx);display:block}
+    .card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--o),transparent);opacity:0;transition:opacity .25s}
+    .card:hover{border-color:var(--ob);background:var(--bg3);transform:translateY(-3px)}
+    .card:hover::after{opacity:1}
+    .card.teal::after{background:linear-gradient(90deg,transparent,var(--t),transparent)}
+    .card.teal:hover{border-color:rgba(45,212,191,.28)}
+    .card.amber::after{background:linear-gradient(90deg,transparent,var(--a),transparent)}
+    .card.amber:hover{border-color:rgba(217,119,6,.28)}
+    .card-icon{width:44px;height:44px;border-radius:12px;background:var(--od);border:1px solid var(--ob);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:18px}
+    .card.teal .card-icon{background:var(--td);border-color:rgba(45,212,191,.25)}
+    .card.amber .card-icon{background:var(--ad);border-color:rgba(217,119,6,.28)}
+    .card-tag{font-family:'Space Mono',monospace;font-size:9px;color:var(--o);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;display:block}
+    .card.teal .card-tag{color:var(--t)}
+    .card.amber .card-tag{color:var(--a)}
+    .card h3{font-size:16px;font-weight:800;letter-spacing:-.3px;margin-bottom:8px}
+    .card p{font-size:14px;color:var(--t2);line-height:1.65;font-weight:600}
+    .card-arrow{position:absolute;bottom:20px;right:20px;font-size:18px;color:var(--t3);transition:all .2s}
+    .card:hover .card-arrow{color:var(--o);transform:translate(2px,-2px)}
+
+    /* SOCIALS */
+    .socials-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+    .social-card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:28px;transition:all .25s;text-decoration:none;color:var(--tx);display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px}
+    .social-card:hover{transform:translateY(-3px)}
+    .social-card.tt{border-color:rgba(249,115,22,.2)}
+    .social-card.tt:hover{border-color:var(--ob);box-shadow:0 8px 30px rgba(249,115,22,.15)}
+    .social-card.eb{border-color:rgba(45,212,191,.2)}
+    .social-card.eb:hover{border-color:rgba(45,212,191,.4);box-shadow:0 8px 30px rgba(45,212,191,.1)}
+    .social-card.gh{border-color:rgba(255,255,255,.1)}
+    .social-card.gh:hover{border-color:rgba(255,255,255,.2);box-shadow:0 8px 30px rgba(255,255,255,.05)}
+    .social-icon{font-size:40px}
+    .social-card h3{font-size:17px;font-weight:800;letter-spacing:-.3px}
+    .social-card p{font-size:13px;color:var(--t2);font-weight:600}
+    .social-handle{font-family:'Space Mono',monospace;font-size:11px;padding:5px 14px;border-radius:999px;margin-top:4px}
+    .social-card.tt .social-handle{background:var(--od);color:var(--ol);border:1px solid var(--ob)}
+    .social-card.eb .social-handle{background:var(--td);color:var(--t);border:1px solid rgba(45,212,191,.25)}
+    .social-card.gh .social-handle{background:var(--b1);color:var(--t2);border:1px solid var(--b2)}
+
+    /* SHOP */
+    .shop-box{background:linear-gradient(135deg,var(--bg2),var(--bg3));border:1px solid var(--ob);border-radius:24px;padding:44px 48px;display:flex;align-items:center;justify-content:space-between;gap:32px;flex-wrap:wrap;position:relative;overflow:hidden}
+    .shop-box::before{content:'';position:absolute;top:-60px;right:-60px;width:240px;height:240px;border-radius:50%;pointer-events:none;background:radial-gradient(circle,rgba(249,115,22,.14),transparent 70%)}
+    .shop-text h3{font-size:26px;font-weight:900;letter-spacing:-.6px;margin-bottom:8px}
+    .shop-text p{font-size:15px;color:var(--t2);font-weight:600;max-width:380px;line-height:1.65}
+    .shop-items{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .shop-chip{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;background:var(--od);border:1px solid var(--ob);color:var(--ol)}
+
+    /* CONTACT */
+    .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+    .contact-card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:28px}
+    .contact-card h3{font-size:17px;font-weight:800;margin-bottom:8px}
+    .contact-card p{font-size:14px;color:var(--t2);font-weight:600;line-height:1.65;margin-bottom:16px}
+    .contact-link{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--o);text-decoration:none;font-family:'Space Mono',monospace;transition:color .18s}
+    .contact-link:hover{color:var(--ol)}
+
+    /* FOOTER */
+    footer{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:40px 24px;border-top:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .flogo{font-size:18px;font-weight:900;color:var(--o);letter-spacing:-.3px}
+    .flinks{display:flex;gap:20px}
+    .flinks a{color:var(--t3);font-size:13px;font-weight:700;text-decoration:none;transition:color .18s}
+    .flinks a:hover{color:var(--ol)}
+    .fcopy{font-family:'Space Mono',monospace;font-size:10px;color:var(--t3)}
+
+    @media(max-width:720px){
+      .nav-links li:not(:last-child):not(:nth-last-child(2)){display:none}
+      .stats-grid{grid-template-columns:repeat(2,1fr)}
+      .stat:nth-child(2){border-right:none}
+      .stat:nth-child(3){border-top:1px solid var(--b1)}
+      .about-grid,.contact-grid{grid-template-columns:1fr}
+      .shop-box{padding:28px 24px}
+      footer{flex-direction:column;align-items:flex-start}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="logo">
+      <div class="logo-mark">O</div>
+      ORANGE OS
+    </a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#tutorials">Tutorials</a></li>
+      <li><a href="#hardware">Hardware</a></li>
+      <li><a href="#community">Community</a></li>
+      <li><a href="https://ebay.us/m/agjMFR" target="_blank" class="n-shop">🛒 Shop</a></li>
+      <li><a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="n-tt">▶ TikTok</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="glow g1"></div>
+    <div class="glow g2"></div>
+    <div class="glow g3"></div>
+    <div class="hero-badge"><span class="blink"></span>ESP32 Hub — By @idkwhat_tech.is</div>
+    <h1><span class="ac">ORANGE</span><br>OS</h1>
+    <p class="hero-sub">Your go-to hub for ESP32 tutorials, hardware reviews, hacking guides, and tech content. Built for the community.</p>
+    <p class="hero-sub2">// tutorials · hardware · guides · community</p>
+    <div class="hero-btns">
+      <a href="#tutorials" class="btn btn-o">📖 Tutorials</a>
+      <a href="#hardware" class="btn btn-g">🔧 Hardware</a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="btn btn-t">▶ TikTok</a>
+    </div>
+    <div class="scroll-hint"><div class="scroll-line"></div>scroll</div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-wrap">
+    <div class="stats-grid">
+      <div class="stat"><span class="sn">ESP32</span><span class="sl">Focused</span></div>
+      <div class="stat"><span class="sn">Free</span><span class="sl">All Content</span></div>
+      <div class="stat"><span class="sn">100%</span><span class="sl">Community</span></div>
+      <div class="stat"><span class="sn">🔶</span><span class="sl">Orange OS</span></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ABOUT -->
+  <section class="section" id="about">
+    <div class="sh">
+      <span class="tag">// About</span>
+      <h2>What is<br>ORANGE OS?</h2>
+      <p class="desc">A hub for everything ESP32 — tutorials, hardware guides, hacking content, and a growing community of tech enthusiasts.</p>
+    </div>
+    <div class="about-grid">
+      <div class="about-card">
+        <span class="about-icon">🔶</span>
+        <h3>The Brand</h3>
+        <p>ORANGE OS is a content brand run by @idkwhat_tech.is on TikTok. We cover ESP32 devices, wireless security tools, hardware hacking, and everything in between. New content drops regularly.</p>
+      </div>
+      <div class="about-card teal">
+        <span class="about-icon">🎯</span>
+        <h3>The Mission</h3>
+        <p>Making ESP32 and hardware hacking accessible to everyone. Whether you're a complete beginner or an experienced hacker, there's something here for you. Free guides, honest reviews, real community.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- TUTORIALS -->
+  <section class="section" id="tutorials">
+    <div class="sh">
+      <span class="tag">// Tutorials & Guides</span>
+      <h2>Learn the tools.<br>Master the hardware.</h2>
+      <p class="desc">Step by step guides for getting started with ESP32 devices, firmware, and wireless tools. All free, all community driven.</p>
+    </div>
+    <div class="content-grid">
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card">
+        <div class="card-icon">🚀</div>
+        <span class="card-tag">Beginner</span>
+        <h3>Getting Started with ESP32</h3>
+        <p>New to ESP32? Start here. We cover what it is, what you can do with it, and which device to buy first.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card teal">
+        <div class="card-icon">📡</div>
+        <span class="card-tag">WiFi</span>
+        <h3>WiFi Tools Explained</h3>
+        <p>What is a deauth attack? What is an evil portal? We break down all the WiFi tools and how they work.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card amber">
+        <div class="card-icon">📻</div>
+        <span class="card-tag">RF & Sub-GHz</span>
+        <h3>Sub-GHz & RF Signals</h3>
+        <p>Learn about Sub-GHz signals, how to capture and replay them, and what hardware you need to get started.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card">
+        <div class="card-icon">💳</div>
+        <span class="card-tag">NFC & RFID</span>
+        <h3>NFC & RFID Basics</h3>
+        <p>Everything you need to know about NFC tags, RFID cards, and how to work with them on ESP32 devices.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card teal">
+        <div class="card-icon">⚡</div>
+        <span class="card-tag">Firmware</span>
+        <h3>Best ESP32 Firmware in 2025</h3>
+        <p>Bruce, Infiltra, Marauder — we compare all the top ESP32 firmware options and which one is right for you.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card amber">
+        <div class="card-icon">🔌</div>
+        <span class="card-tag">Bad USB</span>
+        <h3>Bad USB & DuckyScript</h3>
+        <p>How to use your ESP32 as a Bad USB device. We cover DuckyScript basics and how to write your own payloads.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- HARDWARE -->
+  <section class="section" id="hardware">
+    <div class="sh">
+      <span class="tag">// Hardware Reviews</span>
+      <h2>Honest reviews.<br>Real hardware.</h2>
+      <p class="desc">We test and review the most popular ESP32 devices so you know exactly what to buy before you spend your money.</p>
+    </div>
+    <div class="content-grid">
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card">
+        <div class="card-icon">📟</div>
+        <span class="card-tag">Review</span>
+        <h3>M5StickC Plus 2</h3>
+        <p>The most popular ESP32 hacking device. Is it worth it in 2025? We go hands on and tell you everything.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card teal">
+        <div class="card-icon">⌨️</div>
+        <span class="card-tag">Review</span>
+        <h3>M5Stack Cardputer</h3>
+        <p>A full keyboard in your pocket. We test the Cardputer for all the main use cases and give our verdict.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="card amber">
+        <div class="card-icon">📡</div>
+        <span class="card-tag">Review</span>
+        <h3>LilyGO T-Embed CC1101</h3>
+        <p>The best device for Sub-GHz? We test the T-Embed CC1101 and compare it to alternatives.</p>
+        <span class="card-arrow">↗</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- SHOP -->
+  <section class="section" id="shop">
+    <div class="sh">
+      <span class="tag">// Shop</span>
+      <h2>Pick up some gear.</h2>
+      <p class="desc">Check out the ORANGE OS eBay store for ESP32 devices, accessories, and more. All tested and recommended.</p>
+    </div>
+    <div class="shop-box">
+      <div class="shop-text">
+        <h3>🛒 ORANGE OS Store</h3>
+        <p>Find ESP32 devices, hacking hardware, and accessories. Everything we review and recommend, available to buy directly.</p>
+        <div class="shop-items">
+          <span class="shop-chip">ESP32 Devices</span>
+          <span class="shop-chip">M5Stack</span>
+          <span class="shop-chip">Accessories</span>
+          <span class="shop-chip">Starter Kits</span>
+        </div>
+      </div>
+      <a href="https://ebay.us/m/agjMFR" target="_blank" class="btn btn-o" style="flex-shrink:0">🛒 Visit the Store</a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- COMMUNITY -->
+  <section class="section" id="community">
+    <div class="sh">
+      <span class="tag">// Community & Socials</span>
+      <h2>Join the community.</h2>
+      <p class="desc">Follow along on TikTok, check out the GitHub, and connect with other ESP32 enthusiasts.</p>
+    </div>
+    <div class="socials-grid">
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="social-card tt">
+        <span class="social-icon">📱</span>
+        <h3>TikTok</h3>
+        <p>Tutorials, reviews, demos, and hacking content. New videos dropping regularly.</p>
+        <span class="social-handle">@idkwhat_tech.is</span>
+      </a>
+      <a href="https://ebay.us/m/agjMFR" target="_blank" class="social-card eb">
+        <span class="social-icon">🛒</span>
+        <h3>eBay Store</h3>
+        <p>ESP32 devices and accessories. Everything tested and recommended by ORANGE OS.</p>
+        <span class="social-handle">ORANGE OS Store</span>
+      </a>
+      <a href="https://github.com/esp32orange-stack/Orangeos" target="_blank" class="social-card gh">
+        <span class="social-icon">💻</span>
+        <h3>GitHub</h3>
+        <p>Open source code, projects, and resources from the ORANGE OS community.</p>
+        <span class="social-handle">esp32orange-stack</span>
+      </a>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- CONTACT -->
+  <section class="section" id="contact">
+    <div class="sh">
+      <span class="tag">// Contact</span>
+      <h2>Get in touch.</h2>
+      <p class="desc">Want to collab, have a question, or just want to chat about ESP32? Hit us up.</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card">
+        <h3>💬 Collabs & Business</h3>
+        <p>Want to collaborate on content, sponsor a video, or work together on a project? Reach out on TikTok DMs.</p>
+        <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank" class="contact-link">→ TikTok DMs</a>
+      </div>
+      <div class="contact-card">
+        <h3>🔧 Tech Questions</h3>
+        <p>Got a question about ESP32, firmware, or hardware? Drop a comment on the TikTok or check the GitHub.</p>
+        <a href="https://github.com/esp32orange-stack/Orangeos" target="_blank" class="contact-link">→ GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="flogo">ORANGE OS</div>
+    <div class="flinks">
+      <a href="#tutorials">Tutorials</a>
+      <a href="#hardware">Hardware</a>
+      <a href="https://ebay.us/m/agjMFR" target="_blank">Shop</a>
+      <a href="https://www.tiktok.com/@idkwhat_tech.is" target="_blank">TikTok</a>
+      <a href="https://github.com/esp32orange-stack/Orangeos" target="_blank">GitHub</a>
+    </div>
+    <div class="fcopy">© 2025 ORANGE OS — All Rights Reserved</div>
+  </footer>
+
+</body>
+</html>
